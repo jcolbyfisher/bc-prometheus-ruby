@@ -25,6 +25,7 @@ module Bigcommerce
         include Bigcommerce::Prometheus::Loggable
 
         def initialize(app:)
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] initializing new Resque thinger | #{@server_port}"
           @app = app
           @enabled = Bigcommerce::Prometheus.enabled
           @process_name = Bigcommerce::Prometheus.process_name
@@ -33,6 +34,7 @@ module Bigcommerce
           @server_prefix = Bigcommerce::Prometheus.server_prefix
           @collectors = Bigcommerce::Prometheus.resque_collectors || []
           @type_collectors = Bigcommerce::Prometheus.resque_type_collectors || []
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] initialized new Resque thinger | #{@server_port}"
         end
 
         ##
@@ -44,13 +46,10 @@ module Bigcommerce
             return
           end
 
-          server.add_type_collector(PrometheusExporter::Server::ActiveRecordCollector.new)
-          server.add_type_collector(Bigcommerce::Prometheus::TypeCollectors::Resque.new)
-          @type_collectors.each do |tc|
-            server.add_type_collector(tc)
-          end
-          server.start
           setup_middleware
+
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] setup middleware for new Resque thinger | #{@server_port}"
+
         rescue StandardError => e
           logger.error "[bigcommerce-prometheus][#{@process_name}] Failed to start resque instrumentation - #{e.message} - #{e.backtrace[0..4].join("\n")}"
         end
@@ -67,7 +66,19 @@ module Bigcommerce
 
         def setup_middleware
           logger.info "[bigcommerce-prometheus][#{@process_name}] Setting up resque prometheus middleware"
+
           ::Resque.before_first_fork do
+            # logger.debug "[bigcommerce-prometheus][#{@process_name}] starting new Resque thinger | #{@server_port}"
+
+            # server.add_type_collector(PrometheusExporter::Server::ActiveRecordCollector.new)
+            # server.add_type_collector(Bigcommerce::Prometheus::TypeCollectors::Resque.new)
+            # @type_collectors.each do |tc|
+            #   server.add_type_collector(tc)
+            # end
+            # server.start
+            
+            # logger.debug "[bigcommerce-prometheus][#{@process_name}] started new Resque thinger | #{@server_port}"
+
             ::Bigcommerce::Prometheus::Integrations::Resque.start(client: Bigcommerce::Prometheus.client)
             @collectors.each(&:start)
           end

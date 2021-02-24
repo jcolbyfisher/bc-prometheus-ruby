@@ -44,6 +44,8 @@ module Bigcommerce
         @running = false
         ::PrometheusExporter::Metric::Base.default_prefix = @prefix
         setup_signal_handlers
+        @logger.debug "[bigcommerce-prometheus][#{@process_name}] initialized new bc prom server | #{@host}:#{@port}"
+        @logger.debug "[bigcommerce-prometheus][#{@process_name}] called by #{caller.map { |a| a.split("`").pop.gsub("'", "") + '<-'}}"
       end
 
       ##
@@ -53,7 +55,10 @@ module Bigcommerce
         @logger.info "[bigcommerce-prometheus][#{@process_name}] Starting prometheus exporter on port #{@host}:#{@port}"
 
         @run_thread = ::Thread.start do
+          @logger.info "[bigcommerce-prometheus][#{@process_name}] Going to start server in thread | #{@host}:#{@port} | process_name: #{@process_name}"
           @server.start
+        rescue StandardError => e
+          @logger.error "[bigcommerce-prometheus][#{@process_name}] Failure starting server in thread: #{e.message} | #{@host}:#{@port} | process_name: #{@process_name}"
         end
         @running = true
 

@@ -62,6 +62,7 @@ module Bigcommerce
     # @return [Bigcommerce::Prometheus::Client]
     #
     def self.client
+      # 1
       Client.instance
     end
   end

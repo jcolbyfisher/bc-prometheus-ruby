@@ -22,8 +22,15 @@ module Bigcommerce
       # Railtie for automatic configuration of Rails environments
       #
       class Railtie < ::Rails::Railtie
-        config.after_initialize do |app|
-          Bigcommerce::Prometheus::Instrumentors::Web.new(app: app).start
+        initializer 'zzz.bc_prometheus_ruby.configure_rails_initialization' do |app|
+          Rails.logger.debug "Doing Railtie Prometheus initialization"
+          # Bigcommerce::Prometheus::Instrumentors::Web.new(app: app).start
+
+          config.after_initialize do |app|
+            Rails.logger.debug "Doing Railtie after_initialize"
+            # this is called for each Resque child worker
+            Bigcommerce::Prometheus::Instrumentors::Web.new(app: app).start
+          end
         end
       end
     end

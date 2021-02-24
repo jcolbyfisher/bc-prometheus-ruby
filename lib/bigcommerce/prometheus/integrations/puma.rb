@@ -26,6 +26,7 @@ module Bigcommerce
         # Start the puma collector
         #
         def self.start(client: nil, frequency: nil)
+          # 3
           return unless puma_enabled?
 
           if puma_enabled?
@@ -58,6 +59,7 @@ module Bigcommerce
         # @return [Boolean]
         #
         def self.puma_enabled?
+          # binding.pry
           defined?(::Puma) && ::Puma.respond_to?(:stats)
         end
       end
