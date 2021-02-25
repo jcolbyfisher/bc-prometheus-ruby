@@ -44,6 +44,7 @@ module Bigcommerce
         @running = false
         ::PrometheusExporter::Metric::Base.default_prefix = @prefix
         setup_signal_handlers
+        @logger.debug "[bigcommerce-prometheus][#{@process_name}] initialized new BC Prometheus server | #{@host}:#{@port}"
       end
 
       ##

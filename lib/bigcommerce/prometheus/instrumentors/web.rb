@@ -39,6 +39,8 @@ module Bigcommerce
         # Start the web instrumentor
         #
         def start
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] going to initialize a Prometheus Web instrumentor | #{@server_port}"
+          
           unless @enabled
             logger.debug "[bigcommerce-prometheus][#{@process_name}] Prometheus disabled, skipping web start..."
             return
@@ -62,8 +64,10 @@ module Bigcommerce
         end
 
         def setup_before_fork
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] doing the setup_before_fork process for Web | #{@server_port}"
           @app.config.before_fork_callbacks = [] unless @app.config.before_fork_callbacks
           @app.config.before_fork_callbacks << lambda do
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] doing the before_fork_callbacks process for Web | #{@server_port}"
             server.add_type_collector(PrometheusExporter::Server::ActiveRecordCollector.new)
             server.add_type_collector(PrometheusExporter::Server::WebCollector.new)
             server.add_type_collector(PrometheusExporter::Server::PumaCollector.new)
@@ -83,6 +87,7 @@ module Bigcommerce
         end
 
         def setup_middleware
+          logger.debug "[bigcommerce-prometheus][#{@process_name}] doing the setup_middleware process for web | #{@server_port}"
           @app.middleware.unshift(PrometheusExporter::Middleware, client: Bigcommerce::Prometheus.client)
         rescue StandardError => e
           logger.warn "[bc-prometheus-ruby] Failed to attach app middleware in web instrumentor: #{e.message}"
