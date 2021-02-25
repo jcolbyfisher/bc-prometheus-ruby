@@ -23,7 +23,9 @@ module Bigcommerce
       #
       class Railtie < ::Rails::Railtie
         initializer 'zzz.bc_prometheus_ruby.configure_rails_initialization' do |app|
-          Bigcommerce::Prometheus::Instrumentors::Web.new(app: app).start
+          config.after_initialize do |app|
+            Bigcommerce::Prometheus::Instrumentors::Web.new(app: app).start if Bigcommerce::Prometheus.process_name == 'web'
+          end
         end
       end
     end
